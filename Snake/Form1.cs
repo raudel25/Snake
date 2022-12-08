@@ -9,17 +9,17 @@ namespace Snake
     {
         private bool _pintarObs;
         private int _muros ;
-        bool _nombrevalido = true;
+        private bool _nombrevalido = true;
         private PictureBox _act = new PictureBox();
 
-        bool _generarObs;
+        private bool _generarObs;
         
-        Mapa_Class _mapa = new Mapa_Class();
-        Graphics g;
-        int mouseX;
-        int mouseY;
-        bool[,] snake = new bool[100, 100];
-        string jugador = "";
+        private Mapa_Class _mapa = new Mapa_Class();
+        private Graphics g;
+        private int _mouseX;
+        private int _mouseY;
+        private bool[,] _snake = new bool[100, 100];
+        private string _jugador = "";
 
         public Form1()
         {
@@ -46,15 +46,21 @@ namespace Snake
             pictureBox1.Image = nueva;
             Inicio_Visible(true);
             Generar_Mapa_Visible(false);
-            label5.Text = "Jugador";
-            label6.Text = "Mapa Random";
-            label7.Text = "Generar Mapa";
+            TextsLabel();
+            
             label5.Location = new Point(350, 400);
             textBox1.Location = new Point(325, 450);
             textBox1.Size = new Size(150, 30);
             label6.Location = new Point(240, 500);
             label7.Location = new Point(240, 500);
             label7.Size = new Size(330, 30);
+        }
+
+        private void TextsLabel()
+        {
+            label5.Text = "Jugador";
+            label6.Text = "Mapa Random";
+            label7.Text = "Generar Mapa";
         }
 
         public void Generar_Mapa_Visible(bool visible)
@@ -84,7 +90,7 @@ namespace Snake
 
         public void Juego()
         {
-            Compartir_Class.snake = snake;
+            Compartir_Class.snake = _snake;
             Compartir_Class.fila = _mapa.fila;
             Compartir_Class.columna = _mapa.columna;
             Compartir_Class.velocidad = Convert.ToInt32(numericUpDown4.Value);
@@ -92,14 +98,6 @@ namespace Snake
             Form2 newform = new Form2(this);
             newform.Show();
             this.Hide();
-        }
-
-        private void Form1_Load(object sender, EventArgs e)
-        {
-        }
-
-        private void Label6_Click(object sender, EventArgs e)
-        {
         }
 
         private void Label7_Click(object sender, EventArgs e)
@@ -144,7 +142,7 @@ namespace Snake
             }
             else
             {
-                if (MapaValido(snake, _mapa.fila, _mapa.columna, Convert.ToInt32(numericUpDown3.Value)))
+                if (MapaValido(_snake, _mapa.fila, _mapa.columna, Convert.ToInt32(numericUpDown3.Value)))
                 {
                     Juego();
                 }
@@ -199,11 +197,11 @@ namespace Snake
                     numericUpDown4.Value = int.Parse(inf[3]);
                     ActSnake();
                     _muros = int.Parse(inf[4]);
-                    string[] separar = new string[2];
+                    
                     for (int i = 1; i <= _muros; i++)
                     {
-                        separar = inf[i + 4].Split(' ');
-                        snake[int.Parse(separar[0]), int.Parse(separar[1])] = false;
+                        string[] separar = inf[i + 4].Split(' ');
+                        _snake[int.Parse(separar[0]), int.Parse(separar[1])] = false;
                     }
 
                     _act.Visible = false;
@@ -243,8 +241,8 @@ namespace Snake
             }
             else
             {
-                jugador = textBox1.Text;
-                if (jugador == "")
+                _jugador = textBox1.Text;
+                if (_jugador == "")
                 {
                     _nombrevalido = false;
                     MessageBox.Show("Para guardar el mapa debe introducir su nombre");
@@ -255,7 +253,7 @@ namespace Snake
                 }
                 else
                 {
-                    if (MapaValido(snake, _mapa.fila, _mapa.columna, Convert.ToInt32(numericUpDown3.Value)))
+                    if (MapaValido(_snake, _mapa.fila, _mapa.columna, Convert.ToInt32(numericUpDown3.Value)))
                     {
                         string directorio = "";
                         saveFileDialog1.Filter = "Archivos de Programa (.txt)|*txt;*jpge";
@@ -276,7 +274,7 @@ namespace Snake
                         {
                             for (int y = 0; y < _mapa.columna; y++)
                             {
-                                if (!snake[x, y])
+                                if (!_snake[x, y])
                                 {
                                     inf[j] = x + " " + y + "";
                                     j++;
@@ -345,7 +343,7 @@ namespace Snake
             {
                 for (int j = 0; j < _mapa.columna; j++)
                 {
-                    if (!snake[i, j])
+                    if (!_snake[i, j])
                     {
                         SolidBrush brush = new SolidBrush(Color.Brown);
                         g.FillRectangle(brush, j * _mapa.dimensionC(500) + 1, i * _mapa.dimensionC(500) + 1,
@@ -359,22 +357,22 @@ namespace Snake
                 SolidBrush brush = new SolidBrush(Color.Brown);
                 SolidBrush brush1 = new SolidBrush(Color.Lime);
 
-                int x = mouseX / _mapa.dimensionC(500);
-                int y = mouseY / _mapa.dimensionC(500);
+                int x = _mouseX / _mapa.dimensionC(500);
+                int y = _mouseY / _mapa.dimensionC(500);
 
                 _pintarObs = false;
 
-                if (snake[y, x])
+                if (_snake[y, x])
                 {
                     g.FillRectangle(brush, x * _mapa.dimensionC(500) + 1, y * _mapa.dimensionC(500) + 1,
                         _mapa.dimensionC(500) - 1, _mapa.dimensionC(500) - 1);
-                    snake[y, x] = false;
+                    _snake[y, x] = false;
                 }
                 else
                 {
                     g.FillRectangle(brush1, x * _mapa.dimensionC(500) + 1, y * _mapa.dimensionC(500) + 1,
                         _mapa.dimensionC(500) - 1, _mapa.dimensionC(500) - 1);
-                    snake[y, x] = true;
+                    _snake[y, x] = true;
                 }
             }
         }
@@ -385,8 +383,8 @@ namespace Snake
             {
                 if (numericUpDown1.Value == _mapa.fila && numericUpDown2.Value == _mapa.columna)
                 {
-                    mouseX = e.X;
-                    mouseY = e.Y;
+                    _mouseX = e.X;
+                    _mouseY = e.Y;
                     _act.Visible = false;
                     _muros++;
                     Construir_Mapa();
@@ -417,7 +415,7 @@ namespace Snake
             {
                 for (int j = 0; j < _mapa.columna; j++)
                 {
-                    snake[i, j] = true;
+                    _snake[i, j] = true;
                 }
             }
         }
@@ -774,8 +772,8 @@ namespace Snake
                 }
             }
 
-            int _muros = int.Parse(inf[4]);
-            for (int j = 1; j <= _muros; j++)
+            int muros = int.Parse(inf[4]);
+            for (int j = 1; j <= muros; j++)
             {
                 separar = inf[j + 4].Split(' ');
                 if (!int.TryParse(separar[0], out u)) return false;
@@ -784,14 +782,10 @@ namespace Snake
                     return false;
                 snake3[int.Parse(separar[0]), int.Parse(separar[1])] = false;
             }
+            
 
             if (!MapaValido(snake3, int.Parse(inf[0]), int.Parse(inf[1]), int.Parse(inf[2]))) return false;
             return true;
-        }
-
-        private void pictureBox1_Click(object sender, EventArgs e)
-        {
-            throw new System.NotImplementedException();
         }
     }
 }
