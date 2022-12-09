@@ -1,35 +1,37 @@
 ﻿using System;
 using System.Drawing;
 using System.Windows.Forms;
+using Snake.Properties;
 
 namespace Snake
 {
     public partial class Form2 : Form
     {
-        bool _cerrarform1 = true;
-        bool _startGame;
-        int _puntuacion;
-        int _crecer;
-        string _direccion = "";
-        int _indice;
-        int[] _serpX = new int[10000];
-        int[] _serpY = new int[10000];
-        int[] _huevosX = new int[Compartir_Class.huevos];
-        int[] _huevosY = new int[Compartir_Class.huevos];
-        bool[] _huevosVisible = new bool[Compartir_Class.huevos];
+        private int _canthuevosAct;
+        private bool _cerrarform1 = true;
+        private int _crecer;
+        private string _direccion = "";
+        private Graphics _g;
+        private readonly PictureBox[] _huevoPic = new PictureBox[Compartir_Class.huevos];
 
-        int _huevos;
-        int _canthuevosAct;
-        int _velocidad;
-        Graphics _g;
-        Mapa_Class _mapa = new Mapa_Class();
-        bool[,] _snake = new bool[10000, 10000];
-        bool[,] _muros = new bool[10000, 10000];
-        int _muros1 = 0;
-        // PictureBox Act = new PictureBox();
-        PictureBox[] _serp = new PictureBox[10000];
-        PictureBox[] _huevoPic = new PictureBox[Compartir_Class.huevos];
-        Form1 _main;
+        private int _huevos;
+        private readonly bool[] _huevosVisible = new bool[Compartir_Class.huevos];
+        private readonly int[] _huevosX = new int[Compartir_Class.huevos];
+        private readonly int[] _huevosY = new int[Compartir_Class.huevos];
+        private int _indice;
+        private readonly Form1 _main;
+        private readonly Mapa_Class _mapa = new Mapa_Class();
+        private readonly bool[,] _muros = new bool[10000, 10000];
+        private int _muros1;
+
+        private int _puntuacion;
+        
+        private readonly PictureBox[] _serp = new PictureBox[10000];
+        private readonly int[] _serpX = new int[10000];
+        private readonly int[] _serpY = new int[10000];
+        private readonly bool[,] _snake = new bool[10000, 10000];
+        private bool _startGame;
+        private int _velocidad;
 
         public Form2(Form1 newform)
         {
@@ -45,10 +47,10 @@ namespace Snake
 
         private void Label3_Click(object sender, EventArgs e)
         {
-            Form2 hola = new Form2(_main);
+            var hola = new Form2(_main);
             _cerrarform1 = false;
             hola.Show();
-            this.Close();
+            Close();
         }
 
 
@@ -56,7 +58,7 @@ namespace Snake
         {
             _main.Show();
             _cerrarform1 = false;
-            this.Close();
+            Close();
         }
 
         private void Form2_KeyDown(object sender, KeyEventArgs e)
@@ -71,10 +73,7 @@ namespace Snake
                     _crecer++;
                 }
 
-                if (direcAct() != "down")
-                {
-                    _direccion = "up";
-                }
+                if (DirecAct() != "down") _direccion = "up";
             }
 
             if (e.KeyCode == Keys.Right)
@@ -87,10 +86,7 @@ namespace Snake
                     _crecer++;
                 }
 
-                if (direcAct() != "left")
-                {
-                    _direccion = "right";
-                }
+                if (DirecAct() != "left") _direccion = "right";
             }
 
             if (e.KeyCode == Keys.Down)
@@ -103,10 +99,7 @@ namespace Snake
                     _crecer++;
                 }
 
-                if (direcAct() != "up")
-                {
-                    _direccion = "down";
-                }
+                if (DirecAct() != "up") _direccion = "down";
             }
 
             if (e.KeyCode == Keys.Left)
@@ -119,16 +112,10 @@ namespace Snake
                     _crecer++;
                 }
 
-                if (direcAct() != "right")
-                {
-                    _direccion = "left";
-                }
+                if (DirecAct() != "right") _direccion = "left";
             }
 
-            if (e.KeyCode == Keys.A)
-            {
-                timer1.Stop();
-            }
+            if (e.KeyCode == Keys.A) timer1.Stop();
         }
 
         public void Juego()
@@ -141,17 +128,12 @@ namespace Snake
             _velocidad = Compartir_Class.velocidad;
             timer1.Interval = 1000 / _velocidad;
             _huevos = Compartir_Class.huevos;
-            for (int i = 0; i < _mapa.fila; i++)
+            for (var i = 0; i < _mapa.fila; i++)
+            for (var j = 0; j < _mapa.columna; j++)
             {
-                for (int j = 0; j < _mapa.columna; j++)
-                {
-                    _snake[i, j] = Compartir_Class.snake[i, j];
-                    _muros[i, j] = Compartir_Class.snake[i, j];
-                    if (!_muros[i, j])
-                    {
-                        _muros1++;
-                    }
-                }
+                _snake[i, j] = Compartir_Class.snake[i, j];
+                _muros[i, j] = Compartir_Class.snake[i, j];
+                if (!_muros[i, j]) _muros1++;
             }
 
             Construir_Mapa();
@@ -169,77 +151,60 @@ namespace Snake
 
         public void Construir_Mapa()
         {
-            PictureBox pic = new PictureBox();
+            var pic = new PictureBox();
 
             pic.Size = new Size(_mapa.dimensionX(600), _mapa.dimensionY(600));
             pic.Location = new Point(100 + _mapa.locationX(600), 80 + _mapa.locationY(600));
             pic.Paint += Pintar;
-            this.Controls.Add(pic);
+            Controls.Add(pic);
         }
 
         private void Pintar(object sender, PaintEventArgs e)
         {
             _g = e.Graphics;
-            Pen p = new Pen(Color.Black, 1);
-            for (int i = 0; i <= _mapa.columna; i++)
-            {
-                _g.DrawLine(p, i * _mapa.dimensionC(600), 0, i * _mapa.dimensionC(600), _mapa.fila * _mapa.dimensionC(600));
-            }
+            var p = new Pen(Color.Black, 1);
+            for (var i = 0; i <= _mapa.columna; i++)
+                _g.DrawLine(p, i * _mapa.dimensionC(600), 0, i * _mapa.dimensionC(600),
+                    _mapa.fila * _mapa.dimensionC(600));
 
-            for (int i = 0; i <= _mapa.fila; i++)
-            {
+            for (var i = 0; i <= _mapa.fila; i++)
                 _g.DrawLine(p, 0, i * _mapa.dimensionC(600), _mapa.dimensionC(600) * _mapa.columna,
                     i * _mapa.dimensionC(600));
-            }
 
-            for (int i = 0; i < _mapa.fila; i++)
-            {
-                for (int j = 0; j < _mapa.columna; j++)
+            for (var i = 0; i < _mapa.fila; i++)
+            for (var j = 0; j < _mapa.columna; j++)
+                if (!_muros[i, j])
                 {
-                    if (!_muros[i, j])
-                    {
-                        SolidBrush brush = new SolidBrush(Color.Brown);
-                        _g.FillRectangle(brush, j * _mapa.dimensionC(600) + 1, i * _mapa.dimensionC(600) + 1,
-                            _mapa.dimensionC(600) - 1, _mapa.dimensionC(600) - 1);
-                    }
+                    var brush = new SolidBrush(Color.Brown);
+                    _g.FillRectangle(brush, j * _mapa.dimensionC(600) + 1, i * _mapa.dimensionC(600) + 1,
+                        _mapa.dimensionC(600) - 1, _mapa.dimensionC(600) - 1);
                 }
-            }
         }
 
         public void Construir_SerpienteRND()
         {
-            int[] coorX = new int[10000];
-            int[] coorY = new int[10000];
-            int[] direcX = {0, -1, 0, 1};
-            int[] direcY = {1, 0, -1, 0};
-            string[] direcCons = new string[625 * 4];
-            int iteartor = 0;
-            for (int x = 0; x < _mapa.fila; x++)
-            {
-                for (int y = 0; y < _mapa.columna; y++)
-                {
-                    if (_snake[x, y])
-                    {
-                        bool e = true;
-                        for (int j = 0; j < _huevos; j++)
-                        {
-                            if (_huevosX[j] == x && _huevosY[j] == y)
-                            {
-                                e = false;
-                            }
-                        }
+            var coorX = new int[10000];
+            var coorY = new int[10000];
 
-                        if (e)
-                        {
-                            coorX[iteartor] = x;
-                            coorY[iteartor] = y;
-                            iteartor++;
-                        }
+            var iteartor = 0;
+            for (var x = 0; x < _mapa.fila; x++)
+            for (var y = 0; y < _mapa.columna; y++)
+                if (_snake[x, y])
+                {
+                    var e = true;
+                    for (var j = 0; j < _huevos; j++)
+                        if (_huevosX[j] == x && _huevosY[j] == y)
+                            e = false;
+
+                    if (e)
+                    {
+                        coorX[iteartor] = x;
+                        coorY[iteartor] = y;
+                        iteartor++;
                     }
                 }
-            }
 
-            int i = Random(iteartor);
+            var i = Random(iteartor);
             _serpX[0] = coorX[i];
             _serpY[0] = coorY[i];
             _snake[coorX[i], coorY[i]] = false;
@@ -249,95 +214,86 @@ namespace Snake
 
         public void PintarSerpiente(int n)
         {
-            PictureBox pic1 = new PictureBox();
+            var pic1 = new PictureBox();
             pic1.Size = new Size(_mapa.dimensionC(600) - 1, _mapa.dimensionC(600) - 1);
             if (n == 0)
             {
-                Bitmap vieja = (Bitmap) Snake.Properties.Resources.cabezaArriba;
-                Bitmap nueva = new Bitmap(vieja, _mapa.dimensionC(600) - 1, _mapa.dimensionC(600) - 1);
+                var vieja = Resources.cabezaArriba;
+                var nueva = new Bitmap(vieja, _mapa.dimensionC(600) - 1, _mapa.dimensionC(600) - 1);
                 pic1.Image = nueva;
             }
             else
             {
-                Bitmap vieja = (Bitmap) Snake.Properties.Resources.CuerpoSerp;
-                Bitmap nueva = new Bitmap(vieja, _mapa.dimensionC(600) - 1, _mapa.dimensionC(600) - 1);
+                var vieja = Resources.CuerpoSerp;
+                var nueva = new Bitmap(vieja, _mapa.dimensionC(600) - 1, _mapa.dimensionC(600) - 1);
                 pic1.Image = nueva;
             }
 
             pic1.BringToFront();
-            this.Controls.Add(pic1);
+            Controls.Add(pic1);
             _serp[n] = pic1;
         }
 
         public void GenerarComida()
         {
-            int[] coorX = new int[10000];
-            int[] coorY = new int[10000];
-            bool[] libre = new bool[10000];
-            bool[] libre1 = new bool[10000];
-            int[] coorX1 = new int[10000];
-            int[] coorY1 = new int[10000];
-            int[] direcX = {0, -1, 0, 1};
-            int[] direcY = {1, 0, -1, 0};
-            string[] direcCons = new string[625 * 4];
-            int contlibre = 0;
-            int iteartor = 0;
-            int iteartor1 = 0;
-            for (int x = 0; x < _mapa.fila; x++)
-            {
-                for (int y = 0; y < _mapa.columna; y++)
+            var coorX = new int[10000];
+            var coorY = new int[10000];
+            var libre = new bool[10000];
+            var libre1 = new bool[10000];
+            var coorX1 = new int[10000];
+            var coorY1 = new int[10000];
+            int[] direcX = { 0, -1, 0, 1 };
+            int[] direcY = { 1, 0, -1, 0 };
+
+            var contlibre = 0;
+            var iteartor = 0;
+            var iteartor1 = 0;
+            for (var x = 0; x < _mapa.fila; x++)
+            for (var y = 0; y < _mapa.columna; y++)
+                if (_snake[x, y])
                 {
-                    if (_snake[x, y])
+                    contlibre++;
+                    int cantObs = 0;
+                    for (var j = 0; j < 4; j++)
                     {
-                        contlibre++;
-                        int cant_obs = 0;
-                        for (int j = 0; j < 4; j++)
+                        int poscabezX;
+                        int poscabezY;
+                        if (Dentro_Matriz(x + direcX[j], y + direcY[j]))
                         {
-                            int poscabezX = 0;
-                            int poscabezY = 0;
-                            if (Dentro_Matriz(x + direcX[j], y + direcY[j]))
-                            {
-                                poscabezX = x + direcX[j];
-                                poscabezY = y + direcY[j];
-                            }
-                            else
-                            {
-                                poscabezX = x + direcX[j];
-                                poscabezY = y + direcY[j];
-                                if (x + direcX[j] < 0) poscabezX = _mapa.fila - 1;
-                                if (x + direcX[j] >= _mapa.fila) poscabezX = 0;
-                                if (y + direcY[j] < 0) poscabezY = _mapa.columna - 1;
-                                if (y + direcY[j] >= _mapa.columna) poscabezY = 0;
-                            }
-
-                            if (!_snake[poscabezX, poscabezY])
-                            {
-                                cant_obs++;
-                            }
-                        }
-
-                        if (cant_obs <= 2)
-                        {
-                            coorX[iteartor] = x;
-                            coorY[iteartor] = y;
-                            libre[iteartor] = true;
-                            iteartor++;
+                            poscabezX = x + direcX[j];
+                            poscabezY = y + direcY[j];
                         }
                         else
                         {
-                            coorX1[iteartor1] = x;
-                            coorY1[iteartor1] = y;
-                            libre1[iteartor1] = true;
-                            iteartor1++;
+                            poscabezX = x + direcX[j];
+                            poscabezY = y + direcY[j];
+                            if (x + direcX[j] < 0) poscabezX = _mapa.fila - 1;
+                            if (x + direcX[j] >= _mapa.fila) poscabezX = 0;
+                            if (y + direcY[j] < 0) poscabezY = _mapa.columna - 1;
+                            if (y + direcY[j] >= _mapa.columna) poscabezY = 0;
                         }
 
-                        cant_obs = 0;
+                        if (!_snake[poscabezX, poscabezY]) cantObs++;
+                    }
+
+                    if (cantObs <= 2)
+                    {
+                        coorX[iteartor] = x;
+                        coorY[iteartor] = y;
+                        libre[iteartor] = true;
+                        iteartor++;
+                    }
+                    else
+                    {
+                        coorX1[iteartor1] = x;
+                        coorY1[iteartor1] = y;
+                        libre1[iteartor1] = true;
+                        iteartor1++;
                     }
                 }
-            }
 
-            int cant = 0;
-            int cant1 = 0;
+            int cant;
+            int cant1;
             if (contlibre >= _huevos)
             {
                 if (_huevos > iteartor)
@@ -359,15 +315,15 @@ namespace Snake
 
             _canthuevosAct = cant + cant1;
 
-            int canthuevo = 0;
-            int crono = 0;
-            int c = 0;
-            int d = 0;
+            var canthuevo = 0;
+            var crono = 0;
+            var c = 0;
+
             while (true)
             {
                 if (c == cant) break;
-                Random rnd = new Random(DateTime.Now.Millisecond + crono + 4);
-                d = rnd.Next(iteartor);
+                var rnd = new Random(DateTime.Now.Millisecond + crono + 4);
+                int d = rnd.Next(iteartor);
                 if (libre[d])
                 {
                     libre[d] = false;
@@ -386,13 +342,13 @@ namespace Snake
 
             crono = 0;
             c = 0;
-            d = 0;
+
 
             while (true)
             {
                 if (c == cant1) break;
-                Random rnd = new Random(DateTime.Now.Millisecond - crono * crono - 4);
-                d = rnd.Next(iteartor1);
+                var rnd = new Random(DateTime.Now.Millisecond - crono * crono - 4);
+                int d = rnd.Next(iteartor1);
                 if (libre1[d])
                 {
                     libre1[d] = false;
@@ -412,15 +368,15 @@ namespace Snake
 
         public void PintarHuevos()
         {
-            for (int i = 0; i < _huevos; i++)
+            for (var i = 0; i < _huevos; i++)
             {
-                PictureBox pic2 = new PictureBox();
-                Bitmap vieja = (Bitmap) Snake.Properties.Resources.huevo;
-                Bitmap nueva = new Bitmap(vieja, _mapa.dimensionC(600) - 1, _mapa.dimensionC(600) - 1);
+                var pic2 = new PictureBox();
+                var vieja = Resources.huevo;
+                var nueva = new Bitmap(vieja, _mapa.dimensionC(600) - 1, _mapa.dimensionC(600) - 1);
                 pic2.Image = nueva;
                 pic2.Size = new Size(_mapa.dimensionC(600) - 1, _mapa.dimensionC(600) - 1);
                 pic2.Paint += NumerarHuevos;
-                this.Controls.Add(pic2);
+                Controls.Add(pic2);
                 _huevoPic[i] = pic2;
                 _huevoPic[i].Visible = false;
             }
@@ -429,82 +385,56 @@ namespace Snake
         private void NumerarHuevos(object sender, PaintEventArgs e)
         {
             var a = sender;
-            string text = "";
-            bool mayor10 = false;
-            for (int i = 0; i < _huevos; i++)
-            {
+            var text = "";
+            var mayor10 = false;
+            for (var i = 0; i < _huevos; i++)
                 if (a == _huevoPic[i])
                 {
-                    text = (i + 1) + "";
+                    text = i + 1 + "";
                     if (i + 1 >= 10) mayor10 = true;
                 }
-            }
 
-            using (Font myFont = new Font("Arial", (50 * _mapa.dimensionC(600)) / 150))
+            using (var myFont = new Font("Arial", 50 * _mapa.dimensionC(600) / 150))
             {
                 if (mayor10)
                 {
                     mayor10 = false;
                     e.Graphics.DrawString(text, myFont, Brushes.Black,
-                        new PointF((25 * _mapa.dimensionC(600)) / 150, (40 * _mapa.dimensionC(600)) / 150));
+                        new PointF(25 * _mapa.dimensionC(600) / 150, 40 * _mapa.dimensionC(600) / 150));
                 }
                 else
                 {
                     e.Graphics.DrawString(text, myFont, Brushes.Black,
-                        new PointF((45 * _mapa.dimensionC(600)) / 150, (40 * _mapa.dimensionC(600)) / 150));
+                        new PointF(45 * _mapa.dimensionC(600) / 150, 40 * _mapa.dimensionC(600) / 150));
                 }
             }
         }
 
-        public string direcAct()
+        public string DirecAct()
         {
-            if (_serpX[0] - _serpX[1] == -1 && _serpY[0] - _serpY[1] == 0)
-            {
-                return "up";
-            }
+            if (_serpX[0] - _serpX[1] == -1 && _serpY[0] - _serpY[1] == 0) return "up";
 
-            if (_serpX[0] - _serpX[1] == _mapa.fila - 1 && _serpY[0] - _serpY[1] == 0)
-            {
-                return "up";
-            }
+            if (_serpX[0] - _serpX[1] == _mapa.fila - 1 && _serpY[0] - _serpY[1] == 0) return "up";
 
-            if (_serpX[0] - _serpX[1] == 0 && _serpY[0] - _serpY[1] == 1)
-            {
-                return "right";
-            }
+            if (_serpX[0] - _serpX[1] == 0 && _serpY[0] - _serpY[1] == 1) return "right";
 
-            if (_serpX[0] - _serpX[1] == 0 && _serpY[0] - _serpY[1] == -_mapa.columna + 1)
-            {
-                return "right";
-            }
+            if (_serpX[0] - _serpX[1] == 0 && _serpY[0] - _serpY[1] == -_mapa.columna + 1) return "right";
 
-            if (_serpX[0] - _serpX[1] == 1 && _serpY[0] - _serpY[1] == 0)
-            {
-                return "down";
-            }
+            if (_serpX[0] - _serpX[1] == 1 && _serpY[0] - _serpY[1] == 0) return "down";
 
-            if (_serpX[0] - _serpX[1] == -_mapa.fila + 1 && _serpY[0] - _serpY[1] == 0)
-            {
-                return "down";
-            }
+            if (_serpX[0] - _serpX[1] == -_mapa.fila + 1 && _serpY[0] - _serpY[1] == 0) return "down";
 
-            if (_serpX[0] - _serpX[1] == 0 && _serpY[0] - _serpY[1] == -1)
-            {
-                return "left";
-            }
+            if (_serpX[0] - _serpX[1] == 0 && _serpY[0] - _serpY[1] == -1) return "left";
 
-            if (_serpX[0] - _serpX[1] == 0 && _serpY[0] - _serpY[1] == _mapa.columna - 1)
-            {
-                return "left";
-            }
+            if (_serpX[0] - _serpX[1] == 0 && _serpY[0] - _serpY[1] == _mapa.columna - 1) return "left";
 
             return "";
         }
 
         public void Moverse()
         {
-            int movX = 0;
-            int movY = 0;
+            var movX = 0;
+            var movY = 0;
             if (_direccion == "up")
             {
                 movX = -1;
@@ -529,8 +459,8 @@ namespace Snake
                 movY = -1;
             }
 
-            int poscabezX = 0;
-            int poscabezY = 0;
+            int poscabezX;
+            int poscabezY;
             if (Dentro_Matriz(_serpX[0] + movX, _serpY[0] + movY))
             {
                 poscabezX = _serpX[0] + movX;
@@ -548,15 +478,12 @@ namespace Snake
 
             if (_snake[poscabezX, poscabezY])
             {
-                for (int i = 0; i <= _indice; i++)
-                {
-                    _snake[_serpX[i], _serpY[i]] = true;
-                }
+                for (var i = 0; i <= _indice; i++) _snake[_serpX[i], _serpY[i]] = true;
 
-                int cambX = 0;
-                int cambY = 0;
-                int cambio = 0;
-                for (int i = 0; i <= _indice; i++)
+                var cambX = 0;
+                var cambY = 0;
+
+                for (var i = 0; i <= _indice; i++)
                 {
                     if (i == 0)
                     {
@@ -567,7 +494,7 @@ namespace Snake
                     }
                     else
                     {
-                        cambio = cambX;
+                        int cambio = cambX;
                         cambX = _serpX[i];
                         _serpX[i] = cambio;
                         cambio = cambY;
@@ -603,31 +530,25 @@ namespace Snake
 
         public void Comer()
         {
-            for (int i = 0; i < _huevos; i++)
-            {
+            for (var i = 0; i < _huevos; i++)
                 if (_huevosX[i] == _serpX[0] && _huevosY[i] == _serpY[0])
-                {
-                    if (_huevoPic[i].Visible == true)
+                    if (_huevoPic[i].Visible)
                     {
                         _huevosVisible[i] = false;
                         _canthuevosAct--;
 
                         _crecer = i + 1;
                         if (_canthuevosAct == 0)
-                        {
                             GenerarComida();
-                        }
                         else Puntuacion(i);
 
                         break;
                     }
-                }
-            }
         }
 
         public int Random(int n)
         {
-            Random rnd = new Random();
+            var rnd = new Random();
             return rnd.Next(n);
         }
 
@@ -640,44 +561,40 @@ namespace Snake
 
         public void Puntuacion(int i)
         {
-            int[] direcX = {0, -1, 0, 1};
-            int[] direcY = {1, 0, -1, 0};
-            int[,] cerca = new int[_mapa.fila, _mapa.columna];
-            int s = 0;
-            for (int x1 = 0; x1 < _mapa.fila; x1++)
-            {
-                for (int y1 = 0; y1 < _mapa.columna; y1++)
-                {
-                    cerca[x1, y1] = 0;
-                }
-            }
+            int[] direcX = { 0, -1, 0, 1 };
+            int[] direcY = { 1, 0, -1, 0 };
+            var cerca = new int[_mapa.fila, _mapa.columna];
+            var s = 0;
+            for (var x1 = 0; x1 < _mapa.fila; x1++)
+            for (var y1 = 0; y1 < _mapa.columna; y1++)
+                cerca[x1, y1] = 0;
 
             cerca[_huevosX[i], _huevosY[i]] = _mapa.fila * _mapa.columna;
             int x;
             int y;
-            int[] cambX = new int[10000];
-            int[] cambY = new int[10000];
-            int[] cambX1 = new int[10000];
-            int[] cambY1 = new int[10000];
+            var cambX = new int[10000];
+            var cambY = new int[10000];
+            var cambX1 = new int[10000];
+            var cambY1 = new int[10000];
             cambX[0] = _huevosX[i];
             cambY[0] = _huevosY[i];
 
-            int indice1 = 1;
-            int indice2 = 0;
-            int indice3 = 0;
+            var indice1 = 1;
+            var indice2 = 0;
+            var indice3 = 0;
 
 
             while (s != _mapa.fila * _mapa.columna - _muros1 - 1)
             {
-                for (int g = 0; g <= indice2; g++)
+                for (var g = 0; g <= indice2; g++)
                 {
                     x = cambX[g];
                     y = cambY[g];
 
-                    for (int j = 0; j < 4; j++)
+                    for (var j = 0; j < 4; j++)
                     {
-                        int poscabezX = 0;
-                        int poscabezY = 0;
+                        int poscabezY;
+                        int poscabezX;
                         if (Dentro_Matriz(x + direcX[j], y + direcY[j]))
                         {
                             poscabezX = x + direcX[j];
@@ -694,7 +611,6 @@ namespace Snake
                         }
 
                         if (_muros[poscabezX, poscabezY])
-                        {
                             if (cerca[poscabezX, poscabezY] == 0)
                             {
                                 cerca[poscabezX, poscabezY] = indice1;
@@ -703,11 +619,10 @@ namespace Snake
                                 indice3++;
                                 s++;
                             }
-                        }
                     }
                 }
 
-                for (int g1 = 0; g1 < indice3; g1++)
+                for (var g1 = 0; g1 < indice3; g1++)
                 {
                     cambX[g1] = cambX1[g1];
                     cambY[g1] = cambY1[g1];
@@ -718,22 +633,16 @@ namespace Snake
                 indice1++;
             }
 
-            int min = _mapa.fila * _mapa.columna - 1;
-            int min1 = 0;
-            for (int j = 0; j < _huevos; j++)
-            {
+            var min = _mapa.fila * _mapa.columna - 1;
+            var min1 = 0;
+            for (var j = 0; j < _huevos; j++)
                 if (j != i)
-                {
-                    if (_huevoPic[j].Visible == true)
-                    {
+                    if (_huevoPic[j].Visible)
                         if (cerca[_huevosX[j], _huevosY[j]] <= min)
                         {
                             min = cerca[_huevosX[j], _huevosY[j]];
                             min1 = j;
                         }
-                    }
-                }
-            }
 
             _puntuacion = _puntuacion + (min1 + 1) * 100;
             label1.Text = "Puntuación: " + _puntuacion + "";
@@ -741,10 +650,7 @@ namespace Snake
 
         private void Form2_FormClosing(object sender, FormClosingEventArgs e)
         {
-            if (_cerrarform1)
-            {
-                _main.Close();
-            }
+            if (_cerrarform1) _main.Close();
         }
 
         private void Form2_FormClosed(object sender, FormClosedEventArgs e)
@@ -755,52 +661,51 @@ namespace Snake
         {
             if (_direccion == "up")
             {
-                Bitmap vieja = (Bitmap) Snake.Properties.Resources.cabezaArriba;
-                Bitmap nueva = new Bitmap(vieja, _mapa.dimensionC(600) - 1, _mapa.dimensionC(600) - 1);
+                var vieja = Resources.cabezaArriba;
+                var nueva = new Bitmap(vieja, _mapa.dimensionC(600) - 1, _mapa.dimensionC(600) - 1);
                 _serp[0].Image = nueva;
             }
 
             if (_direccion == "right")
             {
-                Bitmap vieja = (Bitmap) Snake.Properties.Resources.cabezaDerecha;
-                Bitmap nueva = new Bitmap(vieja, _mapa.dimensionC(600) - 1, _mapa.dimensionC(600) - 1);
+                var vieja = Resources.cabezaDerecha;
+                var nueva = new Bitmap(vieja, _mapa.dimensionC(600) - 1, _mapa.dimensionC(600) - 1);
                 _serp[0].Image = nueva;
             }
 
             if (_direccion == "down")
             {
-                Bitmap vieja = (Bitmap) Snake.Properties.Resources.cabezaAbajo;
-                Bitmap nueva = new Bitmap(vieja, _mapa.dimensionC(600) - 1, _mapa.dimensionC(600) - 1);
+                var vieja = Resources.cabezaAbajo;
+                var nueva = new Bitmap(vieja, _mapa.dimensionC(600) - 1, _mapa.dimensionC(600) - 1);
                 _serp[0].Image = nueva;
             }
 
             if (_direccion == "left")
             {
-                Bitmap vieja = (Bitmap) Snake.Properties.Resources.cabezaIzquierda;
-                Bitmap nueva = new Bitmap(vieja, _mapa.dimensionC(600) - 1, _mapa.dimensionC(600) - 1);
+                var vieja = Resources.cabezaIzquierda;
+                var nueva = new Bitmap(vieja, _mapa.dimensionC(600) - 1, _mapa.dimensionC(600) - 1);
                 _serp[0].Image = nueva;
             }
 
-            for (int i = 0; i <= _indice; i++)
+            for (var i = 0; i <= _indice; i++)
             {
                 _serp[i].BringToFront();
                 _serp[i].Location = new Point(100 + _mapa.locationX(600) + _serpY[i] * _mapa.dimensionC(600) + 1,
                     80 + _mapa.locationY(600) + _serpX[i] * _mapa.dimensionC(600) + 1);
             }
 
-            for (int i = 0; i < _huevos; i++)
-            {
+            for (var i = 0; i < _huevos; i++)
                 if (_huevosVisible[i])
                 {
                     _huevoPic[i].BringToFront();
-                    _huevoPic[i].Location = new Point(100 + _mapa.locationX(600) + _huevosY[i] * _mapa.dimensionC(600) + 1,
+                    _huevoPic[i].Location = new Point(
+                        100 + _mapa.locationX(600) + _huevosY[i] * _mapa.dimensionC(600) + 1,
                         80 + _mapa.locationY(600) + _huevosX[i] * _mapa.dimensionC(600) + 1);
                 }
                 else
                 {
                     _huevoPic[i].Visible = false;
                 }
-            }
         }
     }
 }
