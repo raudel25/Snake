@@ -21,15 +21,15 @@ namespace Snake
         private int _indice;
         private readonly Form1 _main;
         private readonly Mapa_Class _mapa = new Mapa_Class();
-        private readonly bool[,] _muros = new bool[10000, 10000];
+        private readonly bool[,] _muros = new bool[Compartir_Class.fila, Compartir_Class.columna];
         private int _muros1;
 
         private int _puntuacion;
-        
-        private readonly PictureBox[] _serp = new PictureBox[10000];
-        private readonly int[] _serpX = new int[10000];
-        private readonly int[] _serpY = new int[10000];
-        private readonly bool[,] _snake = new bool[10000, 10000];
+
+        private readonly PictureBox[] _serp = new PictureBox[Compartir_Class.fila * Compartir_Class.columna];
+        private readonly int[] _serpX = new int[Compartir_Class.fila * Compartir_Class.columna];
+        private readonly int[] _serpY = new int[Compartir_Class.fila * Compartir_Class.columna];
+        private readonly bool[,] _snake = new bool[Compartir_Class.fila, Compartir_Class.columna];
         private bool _startGame;
         private int _velocidad;
 
@@ -183,8 +183,8 @@ namespace Snake
 
         public void Construir_SerpienteRND()
         {
-            var coorX = new int[10000];
-            var coorY = new int[10000];
+            var coorX = new int[Compartir_Class.fila*Compartir_Class.columna];
+            var coorY = new int[Compartir_Class.columna*Compartir_Class.fila];
 
             var iteartor = 0;
             for (var x = 0; x < _mapa.fila; x++)
@@ -236,12 +236,12 @@ namespace Snake
 
         public void GenerarComida()
         {
-            var coorX = new int[10000];
-            var coorY = new int[10000];
-            var libre = new bool[10000];
-            var libre1 = new bool[10000];
-            var coorX1 = new int[10000];
-            var coorY1 = new int[10000];
+            var coorX = new int[Compartir_Class.fila * Compartir_Class.columna];
+            var coorY = new int[Compartir_Class.fila * Compartir_Class.columna];
+            var libre = new bool[Compartir_Class.fila * Compartir_Class.columna];
+            var libre1 = new bool[Compartir_Class.fila * Compartir_Class.columna];
+            var coorX1 = new int[Compartir_Class.fila * Compartir_Class.columna];
+            var coorY1 = new int[Compartir_Class.fila * Compartir_Class.columna];
             int[] direcX = { 0, -1, 0, 1 };
             int[] direcY = { 1, 0, -1, 0 };
 
@@ -572,10 +572,10 @@ namespace Snake
             cerca[_huevosX[i], _huevosY[i]] = _mapa.fila * _mapa.columna;
             int x;
             int y;
-            var cambX = new int[10000];
-            var cambY = new int[10000];
-            var cambX1 = new int[10000];
-            var cambY1 = new int[10000];
+            var cambX = new int[Compartir_Class.fila * Compartir_Class.columna];
+            var cambY = new int[Compartir_Class.fila * Compartir_Class.columna];
+            var cambX1 = new int[Compartir_Class.fila * Compartir_Class.columna];
+            var cambY1 = new int[Compartir_Class.fila * Compartir_Class.columna];
             cambX[0] = _huevosX[i];
             cambY[0] = _huevosY[i];
 
